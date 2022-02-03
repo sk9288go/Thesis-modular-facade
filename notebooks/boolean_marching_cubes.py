@@ -392,3 +392,40 @@ def marching_cube_mesh_2(cube_lattice, tiles_path):
     fs = np.vstack(face_list)
     tile_mesh = tm.Trimesh(vs, fs)
     return tile_mesh
+
+def boolean_marching_cubes(l):
+    """This is a polygonization method. It converts the lattice to a boolean lattice and runs a boolean marching cube on the lattice. 
+
+    Returns:
+        topogenesis.Lattice: an integer lattice that contains the tile-id at each cell
+    """
+
+    # construct the boolean_marching_cubes stencil
+    mc_stencil = tg.create_stencil("boolean_marching_cube", 1)
+    # retrieve the value of the neighbours
+    cell_corners = l.find_neighbours(mc_stencil, order="C")
+    # converting volume value (TODO: this needs to become a method of its own)
+    volume_flat = l.ravel()
+    volume_flat[volume_flat > 0.0] = 1
+    volume_flat[volume_flat <= 0.0] = 0
+
+    # replace neighbours by their value in volume
+    neighbor_values = volume_flat[cell_corners]
+
+    # computing the cell tile id
+    # the powers of 2 in an array
+    legend = np.flip(2**np.arange(8))
+
+    # multiply the corner with the power of two, sum them, and reshape to the original volume shape
+    tile_id = np.sum(legend * neighbor_values,
+                        axis=1).reshape(l.shape)
+
+    # drop the last column, row and page (since cube-grid is 1 less than the voxel grid in every dimension)
+    # TODO consider that by implementing the origin attribute in lattice this may have to change
+    cube_grid = tile_id[:-1, :-1, :-1]
+
+    # convert the array to lattice
+    cube_lattice = tg.to_lattice(
+        cube_grid, minbound=l.minbound, unit=l.unit)
+
+    return cube_lattice
