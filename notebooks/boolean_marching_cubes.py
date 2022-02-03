@@ -317,23 +317,24 @@ def marching_cube_mesh(cube_lattice, tiles_path):
     filled_cube_pos = cube_pos[cube_tid > 0]
     filled_cube_tid = cube_tid[cube_tid > 0]
 
+    unq_tiles = np.unique(filled_cube_tid)
     # load tiles
-    tiles = [0]
-    for i in range(1, 256):
+    tiles = {}
+    for i in unq_tiles:
         tile_path = os.path.join(tiles_path, 't_' + f'{i:03}' + '.obj')
         tile = tm.load(tile_path)
+        # scale the tile to the unit size of the cube lattice
         tile.vertices *= cube_lattice.unit
-        tiles.append(tile)
+        tiles[i] = tile
 
     last_v_count = 0
     vertice_list = []
     face_list = []
 
     # place tiles
-    for i in range(1, filled_cube_tid.size):
+    for i in range(filled_cube_tid.size):
         # extract current tile
         tile = tiles[filled_cube_tid[i]]
-
         # append the vertices
         vertice_list.append(tile.vertices + filled_cube_pos[i])
         face_list.append(tile.faces + last_v_count)
@@ -341,10 +342,12 @@ def marching_cube_mesh(cube_lattice, tiles_path):
 
     vs = []
     fs = []
-    # if len(vertice_list):
-    vs = np.vstack(vertice_list)
-    fs = np.vstack(face_list)
 
+    if len(vertice_list) > 0:
+        vs = np.vstack(vertice_list)
+        fs = np.vstack(face_list)
+
+    print(len(vs), len(fs))
     tile_mesh = tm.Trimesh(vs, fs)
 
     return tile_mesh
