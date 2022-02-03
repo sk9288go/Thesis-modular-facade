@@ -293,7 +293,7 @@ def save_tile_meshes(tiles_meshes, l_bis, tiles_path):
     for tile_mesh, l in zip(tiles_meshes, l_bis):
 
         # order correction
-        l = np.roll(l, [1, 1, 1], [0, 1, 2])
+        # l = np.roll(l, [1, 1, 1], [0, 1, 2])
         c_id = np.sum(l.flatten(order='F') * pow_two)
 
         # saving mesh
