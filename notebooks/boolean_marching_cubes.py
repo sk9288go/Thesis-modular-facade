@@ -321,7 +321,7 @@ def marching_cube_mesh(cube_lattice, tiles_path):
     # load tiles
     tiles = {}
     for i in unq_tiles:
-        tile_path = os.path.join(tiles_path, 't_' + f'{i:03}' + '.obj')
+        tile_path = os.path.join(tiles_path, 't_' + f'{i:04}' + '.obj')
         tile = tm.load(tile_path)
         # scale the tile to the unit size of the cube lattice
         tile.vertices *= cube_lattice.unit
